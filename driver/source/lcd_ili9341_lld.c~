@@ -1,0 +1,63 @@
+
+#include "driver/lcd_ili9341_lld.h"
+#include <xc.h>
+
+#define CONFIG_DC_TRIS                  TRISG
+#define CONFIG_DC_GPIO                  LATG
+#define CONFIG_DC_PIN                   8
+
+#define CONFIG_FMARK_TRIS               TRISG
+#define CONFIG_FMARK_GPIO               LATG
+#define CONFIG_FMARK_PIN                6
+
+#define CONFIG_DATA_TRIS                TRISD
+#define CONFIG_DATA_GPIO                LATD
+
+#define CONFIG_CS_TRIS                  TRISG
+#define CONFIG_CS_GPIO                  LATG
+#define CONFIG_CS_PIN                   7      
+
+#define CONFIG_WR_TRIS                  TRISG
+#define CONFIG_WR_GPIO                  LATG
+#define CONFIG_WR_PIN                   9
+
+#define COMMAND_ACTIVE()                (CONFIG_DC_GPIO &= ~(0x1u << CONFIG_DC_PIN))
+#define COMMAND_INACTIVE()              (CONFIG_DC_GPIO |=  (0x1u << CONFIG_DC_PIN))
+
+#define CS_ACTIVE()                     (CONFIG_CS_GPIO &= ~(0x1u << CONFIG_CS_PIN))
+#define CS_INACTIVE()                   (CONFIG_CS_GPIO |=  (0x1u << CONFIG_CS_PIN))
+
+#define WR_ACTIVE()                     (CONFIG_WR_GPIO |=  (0x1u << CONFIG_WR_PIN))
+#define WR_INACTIVE()                   (CONFIG_WR_GPIO &= ~(0x1u << CONFIG_WR_PIN))
+
+void ili9341_lld_init(void)
+{
+#if defined(CONFIG_RST_TRIS)
+    CONFIG_RST_TRIS   &= ~(0x1u << CONFIG_RST_PIN);
+    CONFIG_RST_GPIO   &= ~(0x1u << CONFIG_RST_PIN);
+#endif
+    CONFIG_DC_TRIS    &= ~(0x1u << CONFIG_DC_PIN);
+    CONFIG_FMARK_TRIS &= ~(0x1u << CONFIG_FMARK_PIN);
+    CONFIG_FMARK_TRIS &= ~(0x1u << CONFIG_FMARK_PIN);
+    CONFIG_DATA_TRIS   =  0x0u;
+    CONFIG_CS_TRIS    &= ~(0x1u << CONFIG_CS_PIN);
+    CONFIG_WR_TRIS    &= ~(0x1u << CONFIG_WR_PIN);
+    
+    CS_INACTIVE();
+    WR_INACTIVE();
+    COMMAND_INACTIVE();
+}
+
+void ili9341_reset(void)
+{
+#if defined(CONFIG_RST_TRIS)
+    CONFIG_RST_GPIO   &= ~(0x1u << CONFIG_RST_PIN);
+    /*
+     * TODO: Wait 10ms
+     */
+    CONFIG_RST_GPIO   |=  (0x1u << CONFIG_RST_PIN);
+#endif
+}
+
+void ili9341_write_cmd(uint32_t cmd);
+void ili9341_write_data(uint32_t data);
