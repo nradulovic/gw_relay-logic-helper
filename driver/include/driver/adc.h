@@ -9,12 +9,14 @@
 #define	ADC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
 void initAdcDriver(void);
+bool adc_batch_is_done(void);
 void adcEnableChannel(uint32_t id, void (* callback)(int32_t));
 void adcDisableChannel(uint32_t id);
 int32_t adcReadChannel(uint32_t id);

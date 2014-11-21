@@ -22,7 +22,7 @@
 #define CONFIG_RELAY_COUPLED_PIN            5
 
 #define CONFIG_RELAY_DECOUPLED_GPIO         &GpioA
-#define CONFIG_RELAY_DECOUPLED_PIN          12
+#define CONFIG_RELAY_DECOUPLED_PIN          4
 
 #define CONFIG_RELAY_GROUND_BLOCKED_GPIO    &GpioB
 #define CONFIG_RELAY_GROUND_BLOCKED_PIN     3
@@ -58,10 +58,10 @@
 #define CONFIG_SENS_VOLTAGE_MV              5000ul
 
 #define ADC_RELATIVE_FULL_SCALE_VAL                                             \
-    ((1024ul * CONFIG_SENS_VOLTAGE_MV * CONFIG_SENS_LO_RES) / ((CONFIG_SENS_HI_RES + CONFIG_SENS_LO_RES) * 3300ul))
+    (((uint64_t)1024ul * (uint64_t)CONFIG_SENS_VOLTAGE_MV * (uint64_t)CONFIG_SENS_LO_RES) / (((uint64_t)CONFIG_SENS_HI_RES + (uint64_t)CONFIG_SENS_LO_RES) * (uint64_t)3300ul))
 
 #define ADC_RELATIVE_HALF_SCALE_VAL                                             \
-    (ADC_RELATIVE_FULL_SCALE_VAL / 2ul)
+    (ADC_RELATIVE_FULL_SCALE_VAL / (uint64_t)2ul)
 
 static void board_init_intr(void)
 {
@@ -86,14 +86,18 @@ static void board_init_gpio(void)
 static void board_init_adc(void)
 {
     initAdcDriver();
+    adcSetZero(ADC_RELATIVE_HALF_SCALE_VAL);
 
     gpioSetAsInput(CONFIG_SENS_COUPLER_GPIO, CONFIG_SENS_COUPLER_PIN);
+    *(CONFIG_SENS_COUPLER_GPIO)->ansel |= (0x1u << CONFIG_SENS_COUPLER_PIN);
     adcEnableChannel(CONFIG_SENS_COUPLER_CHANNEL, NULL);
 
     gpioSetAsInput(CONFIG_SENS_CLOSE_GPIO, CONFIG_SENS_CLOSE_PIN);
+    *(CONFIG_SENS_CLOSE_GPIO)->ansel |= (0x1u << CONFIG_SENS_CLOSE_PIN);
     adcEnableChannel(CONFIG_SENS_CLOSE_CHANNEL,   NULL);
 
     gpioSetAsInput(CONFIG_SENS_GROUND_GPIO, CONFIG_SENS_GROUND_PIN);
+    *(CONFIG_SENS_GROUND_GPIO)->ansel |= (0x1u << CONFIG_SENS_GROUND_PIN);
     adcEnableChannel(CONFIG_SENS_GROUND_CHANNEL, NULL);
 }
 
@@ -101,9 +105,9 @@ static uint32_t convert_to_relative(int32_t adc_value)
 {
     uint32_t         retval;
 
-    retval = abs(adc_value - ADC_RELATIVE_HALF_SCALE_VAL);
-    retval *= (ADC_RELATIVE_FULL_SCALE_VAL - ADC_RELATIVE_HALF_SCALE_VAL) * 100000ul;
-    retval /= (ADC_RELATIVE_FULL_SCALE_VAL - ADC_RELATIVE_HALF_SCALE_VAL);
+    retval = (uint32_t)abs(adc_value - (int32_t)ADC_RELATIVE_HALF_SCALE_VAL);
+    retval *= (uint32_t)100ul;
+    retval /= (uint32_t)ADC_RELATIVE_HALF_SCALE_VAL;
 
     return (retval);
 }
@@ -236,6 +240,15 @@ static void process_close_blocker(void)
     }
 }
 
+static void initial_delay(void)
+{
+    uint32_t            batch_no;
+
+    for (batch_no = 0; batch_no < 16; batch_no++) {
+        while (!adc_batch_is_done());
+    }
+}
+
 /*
  * 
  */
@@ -248,6 +261,8 @@ int main(int argc, char** argv)
     board_init_clock();
     board_init_gpio();
     board_init_adc();
+
+    initial_delay();
 
     for (;;) {
         process_coupler();

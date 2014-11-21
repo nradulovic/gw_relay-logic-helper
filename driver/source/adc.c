@@ -67,6 +67,7 @@ struct adcChannel {
     void             (* callback)(int32_t);
 };
 
+static bool     g_batch_is_done = false;
 static uint32_t adcEnabledChannels;
 static uint32_t adcNumOfEnabledChannels;
 static uint32_t adcNumOfSamples;
@@ -101,11 +102,36 @@ static void disableAdc(void) {
 }
 
 void initAdcDriver(void) {
+    g_batch_is_done         = false;
     disableAdc();
     adcEnabledChannels      = 0u;
     adcNumOfEnabledChannels = 0u;
     IPC5CLR = IPC5_AD1_PRIORITY_Msk | IPC5_AD1_SUBPRIORITY_Msk;
     IPC5SET = IPC5_AD1_PRIORITY(CONFIG_ADC_ISR_PRIORITY) | IPC5_AD1_SUBPRIORITY(CONFIG_ADC_ISR_SUBPRIORITY);
+}
+
+bool adc_batch_is_done(void)
+{
+    if (g_batch_is_done) {
+        g_batch_is_done = false;
+
+        return (true);
+    } else {
+
+        return (false);
+    }
+}
+
+void adcSetZero(uint32_t zero)
+{
+    uint32_t            channel;
+    uint32_t            itr;
+
+    for (channel = 0; channel < 16; channel++) {
+        for (itr = 0; itr < CONFIG_NUM_OF_SAMPLES; itr++) {
+            Channel[channel].output[itr] = zero;
+        }
+    }
 }
 
 void adcEnableChannel(uint32_t id, void (* callback)(int32_t)) {
@@ -167,7 +193,7 @@ void __ISR(_ADC_VECTOR) adcHandler(void) {
     id = 0u;
 
     for (cnt = 0; cnt < 16; cnt++) {
-        value = (int32_t)(&ADC1BUF0)[cnt];
+        value = (int32_t)(&ADC1BUF0)[cnt * 4u];
 
         while ((adcEnabledChannels & (0x1u << id)) == 0u) {
             id++;
@@ -186,6 +212,7 @@ void __ISR(_ADC_VECTOR) adcHandler(void) {
 
     if (adcNumOfSamples >= CONFIG_NUM_OF_SAMPLES) {
         adcNumOfSamples = 0;
+        g_batch_is_done = true;
     }
     IFS0CLR = IFS0_AD1IF;
 }
