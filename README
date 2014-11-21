@@ -1,0 +1,4 @@
+Simple relay logic helper board:
+ - reads hall sensors to provide the mechanical status to relay logic
+ - more in planning
+
