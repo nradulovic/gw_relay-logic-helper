@@ -42,9 +42,9 @@
 #define CONFIG_SENS_CLOSE_PIN               1
 #define CONFIG_SENS_CLOSE_CHANNEL           1
 
-#define CONFIG_COUPLER_COUPLED              30
-#define CONFIG_COUPLER_DECOUPLED            70
-#define CONFIG_COUPLER_HYST                 4
+#define CONFIG_COUPLER_COUPLED              6
+#define CONFIG_COUPLER_DECOUPLED            38
+#define CONFIG_COUPLER_HYST                 2
 
 #define CONFIG_GROUND_DETECTED              70
 #define CONFIG_GROUND_HYST                  10
@@ -136,7 +136,7 @@ static void process_coupler(void)
             gpio_set(CONFIG_RELAY_COUPLED_GPIO,   CONFIG_RELAY_COUPLED_PIN);
             gpio_clr(CONFIG_RELAY_DECOUPLED_GPIO, CONFIG_RELAY_DECOUPLED_PIN);
             
-            if (coupler < CONFIG_COUPLER_COUPLED - CONFIG_COUPLER_HYST) {
+            if (coupler > CONFIG_COUPLER_COUPLED + CONFIG_COUPLER_HYST) {
                 coupler_state = STATE_UNDEFINED;
             }
             break;
@@ -145,7 +145,7 @@ static void process_coupler(void)
             gpio_clr(CONFIG_RELAY_COUPLED_GPIO,   CONFIG_RELAY_COUPLED_PIN);
             gpio_set(CONFIG_RELAY_DECOUPLED_GPIO, CONFIG_RELAY_DECOUPLED_PIN);
 
-            if (coupler > CONFIG_COUPLER_DECOUPLED + CONFIG_COUPLER_HYST) {
+            if (coupler < CONFIG_COUPLER_DECOUPLED - CONFIG_COUPLER_HYST) {
                 coupler_state = STATE_UNDEFINED;
             }
             break;
@@ -154,12 +154,10 @@ static void process_coupler(void)
             gpio_clr(CONFIG_RELAY_COUPLED_GPIO,   CONFIG_RELAY_COUPLED_PIN);
             gpio_clr(CONFIG_RELAY_DECOUPLED_GPIO, CONFIG_RELAY_DECOUPLED_PIN);
 
-            if (coupler <= CONFIG_COUPLER_DECOUPLED) {
+            if (coupler >= CONFIG_COUPLER_DECOUPLED) {
                 coupler_state = STATE_DECOUPLED;
-            } else if (coupler >= CONFIG_COUPLER_COUPLED) {
+            } else if (coupler <= CONFIG_COUPLER_COUPLED) {
                 coupler_state = STATE_COUPLED;
-            } else {
-                coupler_state = STATE_UNDEFINED;
             }
             break;
         }

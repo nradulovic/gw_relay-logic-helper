@@ -28,8 +28,8 @@ extern "C" {
 
 // DEVCFG1
 #pragma config FNOSC = FRCPLL           // Oscillator Selection Bits (Fast RC Osc with PLL)
-#pragma config FSOSCEN = ON             // Secondary Oscillator Enable (Enabled)
-#pragma config IESO = ON                // Internal/External Switch Over (Enabled)
+#pragma config FSOSCEN = OFF            // Secondary Oscillator Enable (Disabled)
+#pragma config IESO = OFF               // Internal/External Switch Over (Disabled)
 #pragma config POSCMOD = OFF            // Primary Oscillator Configuration (Primary osc disabled)
 #pragma config OSCIOFNC = OFF           // CLKO Output Signal Active on the OSCO Pin (Disabled)
 #pragma config FPBDIV = DIV_8           // Peripheral Clock Divisor (Pb_Clk is Sys_Clk/8)
