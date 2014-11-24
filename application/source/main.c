@@ -46,10 +46,10 @@
 #define CONFIG_COUPLER_DECOUPLED            38
 #define CONFIG_COUPLER_HYST                 2
 
-#define CONFIG_GROUND_DETECTED              70
+#define CONFIG_GROUND_DETECTED              60
 #define CONFIG_GROUND_HYST                  10
 
-#define CONFIG_CLOSE_DETECTED               70
+#define CONFIG_CLOSE_DETECTED               60
 #define CONFIG_CLOSE_HYST                   10
 
 #define CONFIG_SENS_HI_RES                  1000ul
