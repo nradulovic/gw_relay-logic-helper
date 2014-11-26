@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=relay_logic_helper.X
+PROJECTNAME=relay_logic_helper
 
 # Active Configuration
 DEFAULTCONF=default
